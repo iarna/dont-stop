@@ -1,0 +1,31 @@
+{
+  "name": "@iarna/dont-stop",
+  "version": "1.0.0",
+  "bin": {
+    "dont-stop": "index.js"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "standard"
+  },
+  "keywords": [],
+  "author": "Rebecca Turner <me@re-becca.org> (http://re-becca.org/)",
+  "license": "ISC",
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "mixin": "^0.2.0"
+  },
+  "devDependencies": {
+    "standard": "^8.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iarna/dont-stop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/iarna/dont-stop/issues"
+  },
+  "homepage": "https://github.com/iarna/dont-stop#readme",
+  "description": ""
+}
