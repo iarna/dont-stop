@@ -1,41 +1,116 @@
+#!/usr/bin/env node
 'use strict'
 var blessed = require('blessed')
 var Universe = require('./universe.js')
+var fps = 60
 
 var screen = initialize(blessed.screen({
   smartCSR: true,
-  useBCE: true
+  useBCE: false
 }))
+
 var status = blessed.text({
-  top: 0,
-  left: 2,
+  top: screen.rows - 1,
+  left: screen.cols - 43,
+  width: 40,
   content: ''
 })
 screen.append(status)
 
 var universe = new Universe(screen)
-
+var acting = false
+var actionQueue = []
 var player = universe.newPlayer('@', 0, 0, 30)
-player.on('destroy', function () {
-  screen.destroy()
-  console.log('GAME OVER')
-  universe.warnings.forEach(function (w) { return console.log.apply(console, w) })
-  process.exit(0)
-})
-var adversary = universe.newAdversary('*', universe.playField.maxX, universe.playField.maxY, 22)
-adversary.point('up')
-adversary.setPlayer(player)
+player.render.style.inverse = true
+player.once('destroy', destroyPlayer)
+var currentLevel
+screen.render()
 
-for (var ii = 0; ii < 20; ++ii) {
-  do {
-    var xx = Math.floor(Math.random() * (universe.playField.maxX + 1))
-    var yy = Math.floor(Math.random() * (universe.playField.maxY + 1))
-  } while (universe.locations[xx][yy])
-  universe.newOuch('·', xx, yy)
+setInterval(refresh, Math.floor(1000 / fps))
+function refresh () {
+  var now = Date.now()
+  for (var ii = 0; ii < universe.movingObjects.length; ++ii) {
+    if (universe.movingObjects[ii].destroyed) continue
+    universe.movingObjects[ii].move(now)
+  }
+  if (!universe.refresh) return
+  universe.refresh = false
+  status.content = ' Health: ' + player.health + ' Level: ' + currentLevel
+  screen.render()
 }
 
-setInterval(function () { screen.render() }, 16) // 60fps
-screen.render()
+startGame()
+
+function startGame() {
+  var level = 0
+  runNextLevel()
+  function runNextLevel () {
+    runLevel(++level, runNextLevel)
+  }
+}
+
+function fastBind (obj, func) {
+  return function () {
+    return func.apply(obj, arguments)
+  }
+}
+
+function runLevel (level, next) {
+  currentLevel = level
+
+  universe.ouches = Math.floor(Math.pow(2, level + 2) / (level + 2))
+  for (var ii = 0; ii < universe.ouches; ++ii) {
+    do {
+      var xx = Math.floor(Math.random() * (universe.playField.maxX + 1))
+      var yy = Math.floor(Math.random() * (universe.playField.maxY + 1))
+    } while (universe.locations[xx][yy])
+    var ouch = universe.newOuch('·', xx, yy, 11)
+//    ouch.point('up')
+//    ouch.setPlayer(player)
+    ouch.once('destroy', destroyOuch(ouch, player, allDone))
+  }
+  function allDone () {
+    player.point('none')
+    actionQueue = []
+    player.removeListener('moved', nextAction)
+    universe.destroy(function (obj) { return obj !== player })
+    next()
+  }
+}
+
+function destroyPlayer () {
+  screen.destroy()
+  console.log('GAME OVER')
+  console.log('Congratulations! You made it to level', currentLevel)
+  universe.warnings.forEach(function (w) { return console.log.apply(console, w) })
+  process.exit(0)
+}
+
+var explosions = 0
+function destroyOuch (ouch, player, allDone) {
+  var top = ouch.render.top
+  var left = ouch.render.left
+  var xx = ouch.x
+  var yy = ouch.y
+  return function () {
+    --universe.ouches
+    ++explosions
+    explosion(left, top, function () {
+      if (--explosions && universe.ouches < 1) return
+      if (universe.ouches < 1) return allDone()
+      // one out of ten times, destroying an ouch will
+      // replace it with an aversary
+      if (Math.floor(Math.random()*10) === 0) {
+        var adversary = universe.newAdversary('*', xx, yy, 22)
+        adversary.point('up')
+        adversary.setPlayer(player)
+        adversary.on('destroy', function () {
+          player.takeHealing(3)
+        })
+      }
+    })
+  }
+}
 
 function initialize (screen) {
   screen.title = "DON'T STOP"
@@ -60,25 +135,31 @@ function initialize (screen) {
   screen.key('j', down) // vi
   screen.key('space', shoot)
 
-  function left () {
-    player.point('left')
-  }
-
-  function right () {
-    player.point('right')
-  }
-
-  function up () {
-    player.point('up')
-  }
-
-  function down () {
-    player.point('down')
+  function move (dir) {
+    action([player, player.point, dir])
   }
 
   function shoot () {
-    player.shoot()
+    action([player, player.shoot])
   }
+
+
+  function left () {
+    move('left')
+  }
+
+  function right () {
+    move('right')
+  }
+
+  function up () {
+    move('up')
+  }
+
+  function down () {
+    move('down')
+  }
+
 
   var box = blessed.box({
     top: 0,
@@ -89,4 +170,82 @@ function initialize (screen) {
   })
   screen.append(box)
   return screen
+}
+
+function action (todo) {
+  if (acting) return actionQueue.push(todo)
+  acting = true
+  runAction(todo)
+  player.on('moved', nextAction)
+}
+
+function runAction (todo) {
+  todo[1].apply(todo[0], todo.slice(2))
+}
+
+function nextAction () {
+  if (actionQueue.length == 0) {
+    player.removeListener('moved', nextAction)
+    acting = false
+    return
+  }
+  runAction(actionQueue.shift())
+}
+
+function explosion (xx, yy, done) {
+  var boom = blessed.box({
+    left: xx,
+    top: yy,
+    width: 1,
+    height: 1, 
+    transparent: true,
+    align: 'center',
+    valign: 'middle',
+    content: '',
+    style: {
+      fg: '#000000',
+      bg: '#666666',
+    }
+  })
+  var script = [
+    ['width', 1, 'height', 1, 'content', '∵', 'style', ['bg', '990000']],
+    ['style', ['bg', 'red']],
+    ['style', ['bg', 'yellow']],
+    ['style', ['bg', 'white']],
+    ['left', xx-2, 'top', yy-1, 'width', 5, 'height', 3],
+    ['style', ['bg', 'yellow']],
+    ['style', ['bg', 'red']],
+    ['style', ['bg', '#990000']],
+    ['style', ['bg', '#666666']],
+  ] 
+
+  function assignArray (obj, arr) {
+    if (Array.isArray(obj)) return obj[1].apply(obj[0], arr)
+    for (var ii = 0; ii < arr.length; ii += 2) {
+      var key = arr[ii]
+      var value = arr[ii+1]
+      if (Array.isArray(value)) {
+        if (!obj[key]) obj[key] = {}
+        if (typeof obj[key] === 'function') {
+          assignArray([obj, obj[key]], value)
+        } else {
+          assignArray(obj[key], value)
+        }
+      } else {
+        obj[key] = value
+      }
+      if (ii > 10) return
+    }
+  }
+
+  var int = setInterval(function () {
+    if (script.length === 0) {
+      boom.destroy()
+      clearInterval(int)
+      return done()
+    }
+    assignArray(boom, script.shift())
+  }, 150)
+
+  screen.insertAfter(boom, status)
 }

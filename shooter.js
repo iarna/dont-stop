@@ -16,8 +16,8 @@ mixin(Shooter, Healthy)
 
 Shooter.prototype.collidesWith = function (obj) {
   if (obj.safe && obj.shooter === this) return
-  // bounce off objects that don't hurt us
-  if (!obj.damage) {
+  // bounce off objects that don't hurt us and bounce of other shooters
+  if (!obj.damage || obj instanceof Shooter) {
     return Moveable.prototype.collidesWith.call(this, obj)
   }
   this.takeDamage(obj.damage)

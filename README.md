@@ -2,6 +2,15 @@
 
 DON'T STOP is a weird little full screen terminal based game.
 
+![](https://shared.by.re-becca.org/misc-images/Dont-Stop.gif)
+
+Clear all the `ouch`es by firing arrows at them.  When they're clear
+progress to the next level with more `ouch`es.  Sometimes, occasionally, an
+`ouch` will reform after it explodes as an `adversary` who will try to shoot
+you. You don't need to clear them, but clearing them gives you health.
+
+See how far you can make it!
+
 It's very much a WIP.
 
 ```console
@@ -22,3 +31,6 @@ $ npm start
 * Space to shoot.
 * Ctrl-C to exit
 
+## TODO
+
+Investigate a version that uses emoji-type chars

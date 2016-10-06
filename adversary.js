@@ -68,10 +68,10 @@ Adversary.prototype.start = function (now) {
 }
 
 Adversary.prototype.destroy = function () {
-  Shooter.prototype.destroy.call(this)
   clearInterval(this.navigate.interval)
   clearInterval(this.dodge.interval)
   clearInterval(this.attack.interval)
+  Shooter.prototype.destroy.call(this)
 }
 
 Adversary.prototype._navigate = function () {
@@ -160,7 +160,7 @@ Adversary.prototype._dodge = function () {
       atSlot = self.universe.locations[futureX][futureY]
     }
     if (atSlot) {
-      self.universe.warn('avoid!', movement, self.direction, atSlot)
+//      self.universe.warn('avoid!', movement, self.direction, atSlot)
       self.dodge.last = now
       self.spin()
     }

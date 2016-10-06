@@ -14,9 +14,11 @@ function PlayField (screen) {
 PlayField.prototype = {}
 
 PlayField.prototype.add = function (obj) {
+  if (!obj.render) throw new Error('Missing render attribute')
   this.screen.append(obj.render)
 }
 
 PlayField.prototype.remove = function (obj) {
-  this.screen.remove(obj.render)
+  obj.render.free()
+  obj.render.destroy()
 }

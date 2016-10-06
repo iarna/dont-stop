@@ -13,11 +13,7 @@ function Moveable (opt) {
   this.msPer = null
   this.direction = 'none'
   this._debug = {}
-  this.move = {
-    last: null,
-    interval: null,
-    action: this._move()
-  }
+  this.lastMoved = null
 }
 inherits(Moveable, Positioned)
 
@@ -46,32 +42,24 @@ Moveable.prototype.setSpeed = function (speed) {
 
 Moveable.prototype.start = function (now) {
   if (!this.msPer) return
-  this.move.last = now || Date.now()
-  if (this.move.interval) clearInterval(this.move.interval)
-  this.move.interval = setInterval(this.move.action, this.msPer)
+  this.lastMoved = now || Date.now()
 }
 
-Moveable.prototype.destroy = function () {
-  Positioned.prototype.destroy.call(this)
-  clearInterval(this.move.interval)
-}
-
-Moveable.prototype._move = function () {
-  var self = this
-  return function () {
-    var now = Date.now()
-    var timeSince = now - self.move.last
-    var moveBy = Math.floor(timeSince / this.msPer)
-    var jitter = timeSince % this.msPer
-    self.move.last = now - jitter
-    do {
-      self.moveOne()
-    } while (--moveBy)
-    self._debug.timeSince = timeSince
-    self._debug.moveBy = moveBy
-    self._debug.jitter = jitter
-    return true
-  }
+Moveable.prototype.move = function (now) {
+  if (!this.lastMoved) return
+  var timeSince = now - this.lastMoved
+  this._debug.timeSince = Math.floor(timeSince)
+  if (timeSince < this.msPer) return
+  var moveBy = Math.round(timeSince / this.msPer) || 0
+  var jitter = timeSince % this.msPer
+  this._debug.moveBy = moveBy
+  this._debug.jitter = Math.floor(jitter)
+  var iter = 0
+  do {
+    this.moveOne()
+  } while (++iter < 10 && --moveBy > 0)
+  this.lastMoved = this.lastMoved + (iter * this.msPer)
+  this.universe.refresh = true
 }
 
 Moveable.prototype.moveOne = function () {

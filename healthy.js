@@ -8,9 +8,12 @@ function Healthy (opt) {
 Healthy.prototype = {}
 
 Healthy.prototype.takeDamage = function (amount) {
-  if (!amount) throw new Error()
-  this.universe.warn('takeDamage', this, amount)
   if (!amount) return
   this.health -= amount
   if (this.health <= 0) this.destroy()
+}
+
+Healthy.prototype.takeHealing = function (amount) {
+  if (!amount) return
+  this.health += amount
 }
