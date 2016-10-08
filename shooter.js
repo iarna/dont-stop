@@ -29,10 +29,10 @@ Shooter.prototype.shoot = function () {
   if (this.direction === 'down' && this.y === this.playField.maxY) return
   if (this.direction === 'up' && this.y === 0) return
   var icons = {
-    left: '←',
-    up: '↑',
-    right: '→',
-    down: '↓'
+    left: '⇦',
+    up: '⇑',
+    right: '⇨',
+    down: '⇓'
   }
   var shot = this.universe.newShot(icons, this)
   shot.render.style = this.shotStyle

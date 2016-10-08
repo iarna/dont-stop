@@ -14,7 +14,8 @@
   "license": "ISC",
   "dependencies": {
     "blessed": "^0.1.81",
-    "mixin": "^0.2.0"
+    "mixin": "^0.2.0",
+    "signal-exit": "^3.0.1"
   },
   "devDependencies": {
     "standard": "^8.3.0"

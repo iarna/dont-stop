@@ -26,7 +26,7 @@ Positioned.prototype.setXY = function (xx, yy) {
   if (this.y !== yy) this.emit('movedY', this.y, yy)
   this.x = xx
   this.y = yy
-  this.render.left = xx + this.playField.left
+  this.render.left = (xx*2) + this.playField.left
   this.render.top = yy + this.playField.top
 }
 
@@ -36,7 +36,7 @@ Positioned.prototype.setX = function (xx) {
   this.emit('moved', this.x, this.y, xx, this.y)
   this.emit('movedX', this.x, xx)
   this.x = xx
-  this.render.left = xx + this.playField.left
+  this.render.left = (xx*2) + this.playField.left
 }
 
 Positioned.prototype.setY = function (yy) {

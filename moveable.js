@@ -8,7 +8,7 @@ function Moveable (opt) {
 
   this.speed = opt.speed || 0
   this.hspeed = opt.hspeed || opt.speed
-  this.vspeed = opt.vspeed || this.hspeed / 2
+  this.vspeed = opt.vspeed || this.hspeed
   this.speed = null
   this.msPer = null
   this.direction = 'none'
@@ -63,13 +63,14 @@ Moveable.prototype.move = function (now) {
 }
 
 Moveable.prototype.moveOne = function () {
+  var maxX = (this.playField.maxX / 2)^0
   var newX
   var newY
   if (this.direction === 'right') {
     newX = Math.floor(this.x + 1)
-    if (newX >= this.playField.maxX) {
+    if (newX >= maxX) {
       this.point('left')
-      newX = this.playField.maxX
+      newX = maxX
     }
     this.setX(newX)
   } else if (this.direction === 'left') {

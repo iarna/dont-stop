@@ -2,11 +2,14 @@
 'use strict'
 var blessed = require('blessed')
 var Universe = require('./universe.js')
+var onExit = require('signal-exit')
 var fps = 60
 
 var screen = initialize(blessed.screen({
   smartCSR: true,
-  useBCE: false
+  useBCE: false,
+  fullUnicode: true,
+  forceUnicode: true
 }))
 
 var status = blessed.text({
@@ -20,8 +23,7 @@ screen.append(status)
 var universe = new Universe(screen)
 var acting = false
 var actionQueue = []
-var player = universe.newPlayer('@', 0, 0, 30)
-player.render.style.inverse = true
+var player = universe.newPlayer('🐙', 0, 0, 15)
 player.once('destroy', destroyPlayer)
 var currentLevel
 screen.render()
@@ -59,12 +61,13 @@ function runLevel (level, next) {
   currentLevel = level
 
   universe.ouches = Math.floor(Math.pow(2, level + 2) / (level + 2))
+  var maxX = (universe.playField.maxX / 2)^0
   for (var ii = 0; ii < universe.ouches; ++ii) {
     do {
-      var xx = Math.floor(Math.random() * (universe.playField.maxX + 1))
+      var xx = Math.floor(Math.random() * (maxX + 1))
       var yy = Math.floor(Math.random() * (universe.playField.maxY + 1))
     } while (universe.locations[xx][yy])
-    var ouch = universe.newOuch('·', xx, yy, 11)
+    var ouch = universe.newOuch('🌟', xx, yy, 11)
 //    ouch.point('up')
 //    ouch.setPlayer(player)
     ouch.once('destroy', destroyOuch(ouch, player, allDone))
@@ -78,11 +81,14 @@ function runLevel (level, next) {
   }
 }
 
+onExit(function () {
+  universe.warnings.forEach(function (w) { return console.log.apply(console, w) })
+})
+
 function destroyPlayer () {
   screen.destroy()
   console.log('GAME OVER')
   console.log('Congratulations! You made it to level', currentLevel)
-  universe.warnings.forEach(function (w) { return console.log.apply(console, w) })
   process.exit(0)
 }
 
@@ -101,7 +107,7 @@ function destroyOuch (ouch, player, allDone) {
       // one out of ten times, destroying an ouch will
       // replace it with an aversary
       if (Math.floor(Math.random()*10) === 0) {
-        var adversary = universe.newAdversary('*', xx, yy, 22)
+        var adversary = universe.newAdversary('🌪', xx, yy, 11)
         adversary.point('up')
         adversary.setPlayer(player)
         adversary.on('destroy', function () {
@@ -117,7 +123,6 @@ function initialize (screen) {
   screen.key('C-c', function () {
     screen.destroy()
 //    console.log(universe.movingObjects)
-    universe.warnings.forEach(function (w) { return console.log.apply(console, w) })
     process.exit(0)
   })
   screen.key('left', left)
@@ -196,7 +201,7 @@ function explosion (xx, yy, done) {
   var boom = blessed.box({
     left: xx,
     top: yy,
-    width: 1,
+    width: 2,
     height: 1, 
     transparent: true,
     align: 'center',
@@ -208,17 +213,16 @@ function explosion (xx, yy, done) {
     }
   })
   var script = [
-    ['width', 1, 'height', 1, 'content', '∵', 'style', ['bg', '990000']],
+    ['width', 2, 'height', 1, 'content', '🔥', 'style', ['bg', '990000']],
     ['style', ['bg', 'red']],
     ['style', ['bg', 'yellow']],
     ['style', ['bg', 'white']],
-    ['left', xx-2, 'top', yy-1, 'width', 5, 'height', 3],
+    ['left', xx-2, 'top', yy-1, 'width', 6, 'height', 3],
     ['style', ['bg', 'yellow']],
     ['style', ['bg', 'red']],
     ['style', ['bg', '#990000']],
-    ['style', ['bg', '#666666']],
+    ['style', ['bg', '#666666']]
   ] 
-
   function assignArray (obj, arr) {
     if (Array.isArray(obj)) return obj[1].apply(obj[0], arr)
     for (var ii = 0; ii < arr.length; ii += 2) {

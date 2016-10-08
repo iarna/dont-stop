@@ -11,7 +11,6 @@ function Player (opt) {
   Shooter.call(this, opt)
   Hurty.call(this, opt)
   this.damage = 1
-  this.render.style.fg = '#ffffaa'
   this.shotStyle = {
     fg: '#ffffff',
     bold: true

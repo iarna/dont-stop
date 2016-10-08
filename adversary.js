@@ -11,7 +11,6 @@ function Adversary (opt) {
   Shooter.call(this, opt)
   Hurty.call(this, opt)
   this.player = null
-  this.render.style.fg = '#ffaaaa'
   this.shotStyle = {
     fg: '#55ffff'
   }
@@ -29,6 +28,7 @@ function Adversary (opt) {
     interval: null,
     action: this._attack()
   }
+  this.setIcon('🐵')
 }
 inherits(Adversary, Shooter)
 mixin(Adversary, Hurty)
@@ -38,8 +38,10 @@ var directions = ['up', 'down', 'left', 'right']
 Adversary.prototype.takeDamage = function (amount) {
   Shooter.prototype.takeDamage.call(this, amount)
   if (this.health === 2) {
+    this.setIcon('🙈')
     this.render.style.fg = '#aa5555'
   } else if (this.health === 1) {
+    this.setIcon('🙉')
     this.render.style.fg = '#661111'
   }
 }

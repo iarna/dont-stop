@@ -16,6 +16,10 @@ function Entity (opt) {
 }
 inherits(Entity, EventEmitter)
 
+Entity.prototype.setIcon = function (icon) {
+  this.render.content = icon
+}
+
 Entity.prototype.destroy = function () {
   this.destroyed = true
   this.emit('destroy')
