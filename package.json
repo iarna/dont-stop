@@ -28,5 +28,20 @@
     "url": "https://github.com/iarna/dont-stop/issues"
   },
   "homepage": "https://github.com/iarna/dont-stop#readme",
-  "description": ""
+  "description": "DON'T STOP is a weird little full screen terminal based game.",
+  "files": [
+    "adversary.js",
+    "entity.js",
+    "healthy.js",
+    "hurty.js",
+    "index.js",
+    "moveable.js",
+    "ouch.js",
+    "play-field.js",
+    "player.js",
+    "positioned.js",
+    "shooter.js",
+    "shot.js",
+    "universe.js"
+  ]
 }
