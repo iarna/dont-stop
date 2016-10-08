@@ -2,7 +2,7 @@
 
 DON'T STOP is a weird little full screen terminal based game.
 
-![](https://shared.by.re-becca.org/misc-images/Dont-Stop.gif)
+![](https://shared.by.re-becca.org/misc-images/Dont-Stop.gif?1)
 
 Clear all the `ouch`es by firing arrows at them.  When they're clear
 progress to the next level with more `ouch`es.  Sometimes, occasionally, an
