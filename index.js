@@ -92,7 +92,7 @@ function destroyPlayer () {
   process.exit(0)
 }
 
-var explosions = 0
+var animateBooms = 0
 function destroyOuch (ouch, player, allDone) {
   var top = ouch.render.top
   var left = ouch.render.left
@@ -100,9 +100,9 @@ function destroyOuch (ouch, player, allDone) {
   var yy = ouch.y
   return function () {
     --universe.ouches
-    ++explosions
-    explosion(left, top, function () {
-      if (--explosions && universe.ouches < 1) return
+    ++booms
+    animateBoom(left, top, function () {
+      if (--booms && universe.ouches < 1) return
       if (universe.ouches < 1) return allDone()
       // one out of ten times, destroying an ouch will
       // replace it with an aversary
@@ -197,7 +197,7 @@ function nextAction () {
   runAction(actionQueue.shift())
 }
 
-function explosion (xx, yy, done) {
+function animateBoom (xx, yy, done) {
   var boom = blessed.box({
     left: xx,
     top: yy,
