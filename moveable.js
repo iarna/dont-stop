@@ -121,6 +121,11 @@ Moveable.prototype.collidesWith = function (obj) {
       this.point('left')
       break
   }
+  // if neither we nor the other object have moved out of the way yet then
+  // we'll be the one to do it.
+  if (obj.x === this.x && obj.y === this.y) {
+    this.moveOne()
+  }
 }
 
 Moveable.prototype.inspect = function () {
