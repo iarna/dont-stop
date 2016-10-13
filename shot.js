@@ -48,6 +48,9 @@ Shot.prototype.collidesWith = function (obj) {
   if (this.shooter === obj.shooter) {
     return Moveable.prototype.collidesWith.call(this, obj)
   }
-  if (this.safe && this.shooter === obj) return
+  if (this.safe && this.shooter === obj) {
+    this.moveOne()
+    return
+  }
   this.takeDamage(obj.damage)
 }

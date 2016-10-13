@@ -23,9 +23,9 @@ function Universe (screen, seed) {
 Universe.prototype = {}
 
 Universe.prototype.initLocations = function () {
-  this.locations = new Array(this.playField.maxX + 1)
-  for (var ii = 0; ii <= this.playField.maxX; ++ii) {
-    this.locations[ii] = new Array(this.playField.maxY + 1)
+  this.locations = new Array((this.playField.maxX/2)^0 + 1)
+  for (var ii = 0; ii < this.locations.length; ++ii) {
+    this.locations[ii] = new Array((this.playField.maxY/2)^0 + 1)
   }
 }
 
