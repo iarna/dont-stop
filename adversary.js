@@ -49,7 +49,7 @@ Adversary.prototype.takeDamage = function (amount) {
 Adversary.prototype.spin = function () {
   var ourDir = this.direction
   var otherDirs = directions.filter(function (dir) { return dir !== ourDir })
-  this.direction = otherDirs[Math.floor(Math.random() * 3)]
+  this.direction = otherDirs[Math.floor(this.universe.rng.random() * 3)]
 }
 
 Adversary.prototype.setPlayer = function (player) {

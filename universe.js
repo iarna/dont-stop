@@ -5,8 +5,9 @@ var Adversary = require('./adversary.js')
 var Ouch = require('./ouch.js')
 var Shot = require('./shot.js')
 var PlayField = require('./play-field.js')
+var MersenneTwister = require('mersenne-twister')
 
-function Universe (screen) {
+function Universe (screen, seed) {
   this.playField = new PlayField(screen)
   this.movingObjects = []
   this.staticObjects = []
@@ -16,6 +17,7 @@ function Universe (screen) {
   this.objectOnMove = this._onMove()
   this.objectOnDestroy = this._onDestroy()
   this.refresh = false
+  this.rng = new MersenneTwister(seed)
 }
 
 Universe.prototype = {}

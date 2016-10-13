@@ -3,7 +3,10 @@
 var blessed = require('blessed')
 var Universe = require('./universe.js')
 var onExit = require('signal-exit')
+var MersenneTwister = require('mersenne-twister');
 var fps = 60
+
+var seed = process.argv[1]
 
 var screen = initialize(blessed.screen({
   smartCSR: true,
@@ -20,7 +23,7 @@ var status = blessed.text({
 })
 screen.append(status)
 
-var universe = new Universe(screen)
+var universe = new Universe(screen, seed)
 var acting = false
 var actionQueue = []
 var player = universe.newPlayer('🐙', 0, 0, 15)
@@ -64,8 +67,8 @@ function runLevel (level, next) {
   var maxX = (universe.playField.maxX / 2)^0
   for (var ii = 0; ii < universe.ouches; ++ii) {
     do {
-      var xx = Math.floor(Math.random() * (maxX + 1))
-      var yy = Math.floor(Math.random() * (universe.playField.maxY + 1))
+      var xx = Math.floor(universe.rng.random() * (maxX + 1))
+      var yy = Math.floor(universe.rng.random() * (universe.playField.maxY + 1))
     } while (universe.locations[xx][yy])
     var ouch = universe.newOuch('🌟', xx, yy, 11)
 //    ouch.point('up')
@@ -106,7 +109,7 @@ function destroyOuch (ouch, player, allDone) {
       if (universe.ouches < 1) return allDone()
       // one out of ten times, destroying an ouch will
       // replace it with an aversary
-      if (Math.floor(Math.random()*10) === 0) {
+      if (Math.floor(universe.rng.random()*10) === 0) {
         var adversary = universe.newAdversary('🌪', xx, yy, 11)
         adversary.point('up')
         adversary.setPlayer(player)

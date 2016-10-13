@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "blessed": "^0.1.81",
+    "mersenne-twister": "git+https://github.com/boo1ean/mersenne-twister.git",
     "mixin": "^0.2.0",
     "signal-exit": "^3.0.1"
   },
