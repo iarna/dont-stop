@@ -109,7 +109,7 @@ Universe.prototype._onMove = function () {
   return function (oldX, oldY, newX, newY) {
     if (!uni.locations[newX]) {
       uni.locations[newX] = new Array((this.playField.maxY/2)^0 + 1)
-//      uni.warn('Missing', newX, 'when moving')
+      uni.warn('Missing', newX, 'when moving')
     }
     var oldObj = uni.locations[newX][newY]
     if (oldObj && this !== oldObj) {
