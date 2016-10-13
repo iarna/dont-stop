@@ -96,11 +96,10 @@ Universe.prototype.remove = function (obj) {
   obj.removeListener('moved', this.objectOnMove)
   obj.removeListener('destroy', this.objectOnDestroy)
   this.playField.remove(obj)
-  var self = this
-  if (self.move) {
-    this.movingObjects = this.movingObjects.filter(function (obj) { return self !== obj })
+  if (obj.move) {
+    this.movingObjects = this.movingObjects.filter(function (otherObj) { return otherObj !== obj })
   } else {
-    this.staticObjects = this.staticObjects.filter(function (obj) { return self !== obj })
+    this.staticObjects = this.staticObjects.filter(function (otherObj) { return otherObj !== obj })
   }
   this.refresh = true
 }
