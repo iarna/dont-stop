@@ -6,8 +6,7 @@ var onExit = require('signal-exit')
 var MersenneTwister = require('mersenne-twister');
 var fps = 60
 
-var seed = process.argv[1]
-
+var seed = process.argv[2]
 var screen = initialize(blessed.screen({
   smartCSR: true,
   useBCE: false,
