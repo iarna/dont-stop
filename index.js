@@ -54,12 +54,6 @@ function startGame() {
   }
 }
 
-function fastBind (obj, func) {
-  return function () {
-    return func.apply(obj, arguments)
-  }
-}
-
 function runLevel (level, next) {
   currentLevel = level
 
@@ -70,9 +64,7 @@ function runLevel (level, next) {
       var xx = Math.floor(universe.rng.random() * (maxX + 1))
       var yy = Math.floor(universe.rng.random() * (universe.playField.maxY + 1))
     } while (universe.locations[xx][yy])
-    var ouch = universe.newOuch('🌟', xx, yy, 11)
-//    ouch.point('up')
-//    ouch.setPlayer(player)
+    var ouch = universe.newOuch('🌟', xx, yy)
     ouch.once('destroy', destroyOuch(ouch, player, allDone))
   }
   function allDone () {
