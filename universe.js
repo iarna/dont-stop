@@ -29,6 +29,26 @@ Universe.prototype.initLocations = function () {
   }
 }
 
+Universe.prototype.validate = function () {
+  var self = this
+  self.movingObjects.concat(self.staticObjects).forEach(function (obj) {
+    var locObj = self.locations[obj.x][obj.y]
+    if (locObj !== obj) {
+      self.warn('Validate Object Failure: ' + obj.x + ',' + obj.y, obj, '!==', locObj)
+process.exit()
+    }
+  })
+  self.locations.forEach(function (col, xx) {
+    col.forEach(function (locObj, yy) {
+      if (!locObj) { return }
+      if (locObj.x !== xx || locObj.y !== yy) {
+        self.warn('Validate Location Failure: ' + xx + ',' + yy, 'contains', locObj, 'which thinks its at', locObj.x + ',' + locObj.y)
+process.exit()
+      }
+    })
+  })
+}
+
 Universe.prototype.warn = function () {
   this.warnings.push(Array.prototype.slice.call(arguments))
 }

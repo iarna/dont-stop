@@ -42,6 +42,7 @@ function refresh () {
   universe.refresh = false
   status.content = ' Health: ' + player.health + ' Level: ' + currentLevel
   screen.render()
+  universe.validate()
 }
 
 startGame()
