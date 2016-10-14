@@ -7,28 +7,31 @@ var inherits = require('util').inherits
 var mixin = require('mixin')
 
 function Shot (opt) {
-  var hspeed = opt.shotBy.hspeed * 2
-  var vspeed = opt.shotBy.vspeed * 2
-  var xx = opt.shotBy.x
-  var yy = opt.shotBy.y
-  if (opt.shotBy.direction === 'up') {
-    --yy
-  } else if (opt.shotBy.direction === 'down') {
-    ++yy
-  } else if (opt.shotBy.direction === 'left') {
-    --xx
-  } else if (opt.shotBy.direction === 'right') {
-    ++xx
-  }
-  Moveable.call(this, {universe: opt.universe, icon: ' ', x: xx, y: yy, hspeed: hspeed, vspeed: vspeed})
-  Healthy.call(this, {health: opt.health || 1})
-  Hurty.call(this, {damage: opt.damage || 1})
+  if (!opt) opt = {}
+  if (!opt.x) opt.x = opt.shotBy.x
+  if (!opt.y) opt.y = opt.shotBy.y
+  if (!opt.icon) opt.icon = ' '
 
-  this.icons = opt.icons
-  this.point(opt.shotBy.direction)
-  this.lastSeen = opt.shotBy.lastSeen
+  // disable distruction on collisions with the shooter for a little bit
   this.safe = true
+
+  Moveable.call(this, opt)
+  Healthy.call(this, opt)
+  Hurty.call(this, opt)
+
   this.shooter = opt.shotBy
+  this.icons = opt.icons || {
+    left: '⇦',
+    up: '⇑',
+    right: '⇨',
+    down: '⇓'
+  }
+
+  this.point(this.shooter.direction)
+  this.setSpeed(this.shooter.speed * 2)
+  this.lastSeen = this.shooter.lastSeen
+
+  // we have 200ms to stop colliding with our shooter
   var self = this
   setTimeout(function () {
     self.safe = false
@@ -40,7 +43,7 @@ mixin(Shot, Hurty)
 
 Shot.prototype.point = function (dir) {
   Moveable.prototype.point.call(this, dir)
-  this.render.content = this.icons[this.direction]
+  this.setIcon(this.icons[this.direction])
 }
 
 Shot.prototype.collidesWith = function (obj) {

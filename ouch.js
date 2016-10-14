@@ -7,12 +7,14 @@ var inherits = require('util').inherits
 var mixin = require('mixin')
 
 function Ouch (opt) {
+  if (!opt) opt = {}
   if (!opt.health) opt.health = 1
   if (!opt.damage) opt.damage = 1
+  if (!opt.style) opt.style = {fg: '#aaaaff'}
+  if (!opt.icon) opt.icon = '🌟'
   Positioned.call(this, opt)
   Healthy.call(this, opt)
   Hurty.call(this, opt)
-  this.render.style.fg = '#aaaaff'
 }
 inherits(Ouch, Positioned)
 mixin(Ouch, Healthy)

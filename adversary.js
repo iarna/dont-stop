@@ -6,14 +6,15 @@ var inherits = require('util').inherits
 var mixin = require('mixin')
 
 function Adversary (opt) {
+  if (!opt) opt = {}
   if (!opt.health) opt.health = 3
   if (!opt.damage) opt.damage = 1
-  Shooter.call(this, opt)
-  Hurty.call(this, opt)
-  this.player = null
-  this.shotStyle = {
+  if (!opt.shotStyle) opt.shotStyle = {
     fg: '#55ffff'
   }
+  if (!opt.icon) opt.icon = '🐵'
+  Shooter.call(this, opt)
+  Hurty.call(this, opt)
   this.navigate = {
     interval: null,
     action: this._navigate()
@@ -28,7 +29,15 @@ function Adversary (opt) {
     interval: null,
     action: this._attack()
   }
-  this.setIcon('🐵')
+  if (opt.icon !== '🐵') {
+    var self = this
+    setTimeout(function () {
+      if (self.health > 2) {
+        self.setIcon('🐵')
+      }
+    }, 400)
+  }
+  if (opt.player) this.setPlayer(opt.player)
 }
 inherits(Adversary, Shooter)
 mixin(Adversary, Hurty)
@@ -39,17 +48,17 @@ Adversary.prototype.takeDamage = function (amount) {
   Shooter.prototype.takeDamage.call(this, amount)
   if (this.health === 2) {
     this.setIcon('🙈')
-    this.render.style.fg = '#aa5555'
+    this.setStyle({fg: '#aa5555'})
   } else if (this.health === 1) {
     this.setIcon('🙉')
-    this.render.style.fg = '#661111'
+    this.setStyle({fg: '#661111'})
   }
 }
 
 Adversary.prototype.spin = function () {
   var ourDir = this.direction
   var otherDirs = directions.filter(function (dir) { return dir !== ourDir })
-  this.direction = otherDirs[Math.floor(this.universe.rng.random() * 3)]
+  this.direction = otherDirs[this.controller.random(3)]
 }
 
 Adversary.prototype.setPlayer = function (player) {
@@ -60,7 +69,6 @@ Adversary.prototype.setPlayer = function (player) {
 Adversary.prototype.start = function (now) {
   if (!now) now = Date.now()
   if (!this.player) return
-  Shooter.prototype.start.call(this, now)
   if (this.navigate.interval) clearInterval(this.navigate.interval)
   if (this.dodge.interval) clearInterval(this.dodge.interval)
   if (this.attack.interval) clearInterval(this.attack.interval)
@@ -137,17 +145,16 @@ Adversary.prototype._dodge = function () {
     } else {
       yMove = self.direction === 'up' ? -1 : 1
     }
-    var atSlot
+    var atSlot = []
     // lookahead
     var moved = 0
     var futureX = self.x
     var futureY = self.y
-    while (!atSlot && ++moved < 5) {
+    while (!atSlot.length && ++moved < 5) {
       futureX += xMove
       futureY += yMove
-      if (!self.universe.locations[futureX]) break
-      atSlot = self.universe.locations[futureX][futureY]
-      if (atSlot && atSlot.direction === self.direction) atSlot = undefined
+      // don't dodge things we're already running away from
+      atSlot = self.controller.objectsAt(futureX, futureY).filter(function (obj) { return obj.direction !== self.direction })
     }
     // lookbehind
     moved = 0
@@ -155,14 +162,13 @@ Adversary.prototype._dodge = function () {
     yMove *= -1
     futureX = self.x + xMove
     futureY = self.y + yMove
-    while (!atSlot && ++moved < 3) {
+    while (!atSlot.length && ++moved < 3) {
       futureX += xMove
       futureY += yMove
-      if (!self.universe.locations[futureX]) break
-      atSlot = self.universe.locations[futureX][futureY]
+      atSlot = self.controller.objectsAt(futureX, futureY)
     }
-    if (atSlot) {
-//      self.universe.warn('avoid!', movement, self.direction, atSlot)
+    if (atSlot.length) {
+//      self.controller.warn('avoid!', movement, self.direction, atSlot)
       self.dodge.last = now
       self.spin()
     }

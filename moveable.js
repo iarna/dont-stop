@@ -6,48 +6,29 @@ var inherits = require('util').inherits
 function Moveable (opt) {
   Positioned.call(this, opt)
 
-  this.speed = opt.speed || 0
-  this.hspeed = opt.hspeed || opt.speed
-  this.vspeed = opt.vspeed || this.hspeed
   this.speed = null
   this.msPer = null
+  this.lastMoved = null
   this.direction = 'none'
   this._debug = {}
-  this.lastMoved = null
+  if (opt.speed) this.setSpeed(opt.speed)
 }
 inherits(Moveable, Positioned)
 
 Moveable.prototype.point = function (dir) {
   this.direction = dir
-  switch (dir) {
-    case 'up':
-    case 'down':
-      this.setSpeed(this.vspeed)
-      break
-    case 'left':
-    case 'right':
-      this.setSpeed(this.hspeed)
-      break
-  }
+  this.lastMoved = null
 }
 
 Moveable.prototype.setSpeed = function (speed) {
-  if (this.speed) {
-    clearInterval(this.move.interval)
-  }
   this.speed = speed
   this.msPer = 1000 / speed
-  this.start()
-}
-
-Moveable.prototype.start = function (now) {
-  if (!this.msPer) return
-  this.lastMoved = now || Date.now()
+  this.lastMoved = null
 }
 
 Moveable.prototype.move = function (now) {
-  if (!this.lastMoved) return
-  var timeSince = now - this.lastMoved
+  if (!this.speed || this.direction === 'none') return false
+  var timeSince = this.lastMoved ? now - this.lastMoved : this.msPer
   this._debug.timeSince = Math.floor(timeSince)
   if (timeSince < this.msPer) return
   var moveBy = Math.round(timeSince / this.msPer) || 0
@@ -58,42 +39,41 @@ Moveable.prototype.move = function (now) {
   do {
     this.moveOne()
   } while (++iter < 10 && --moveBy > 0)
-  this.lastMoved = this.lastMoved + (iter * this.msPer)
-  this.universe.refresh = true
+  this.lastMoved = (this.lastMoved || now) + (iter * this.msPer)
+  return true
 }
 
 Moveable.prototype.moveOne = function () {
-  var maxX = (this.playField.maxX / 2)^0
   var newX
   var newY
   if (this.direction === 'right') {
     newX = Math.floor(this.x + 1)
-    if (newX >= maxX) {
+    if (this.controller.isOOBX(newX)) {
       this.point('left')
-      newX = maxX
+    } else {
+      this.setX(newX)
     }
-    this.setX(newX)
   } else if (this.direction === 'left') {
     newX = Math.floor(this.x - 1)
-    if (newX <= 0) {
+    if (this.controller.isOOBX(newX)) {
       this.point('right')
-      newX = 0
+    } else {
+      this.setX(newX)
     }
-    this.setX(newX)
   } else if (this.direction === 'up') {
     newY = Math.floor(this.y - 1)
-    if (newY <= 0) {
+    if (this.controller.isOOBY(newY)) {
       this.point('down')
-      newY = 0
+    } else {
+      this.setY(newY)
     }
-    this.setY(newY)
   } else if (this.direction === 'down') {
     newY = Math.floor(this.y + 1)
-    if (newY >= this.playField.maxY) {
+    if (this.controller.isOOBY(newY)) {
       this.point('up')
-      newY = this.playField.maxY
+    } else {
+      this.setY(newY)
     }
-    this.setY(newY)
   }
 }
 
@@ -128,7 +108,10 @@ Moveable.prototype.collidesWith = function (obj) {
   }
 }
 
+Moveable.prototype.inspectTemplate = '[{alive}{id} {class} "{icon}" @ {x},{y} -> {direction}{speed}{damage}]'
 Moveable.prototype.inspect = function () {
-  return '[#' + this.id + ' ' + this['__pro' + 'to__'].constructor.name + ' "' + this.render.content + '" @ ' +
-    this.x + ',' + this.y + ' -> ' + this.direction + (this.speed ? '@' + this.speed + 'cps' : '') + (this.damage ? ' !' + this.damage : '') + ']'
+  return Positioned.prototype.inspect.call(this)
+    .replace(/\{direction\}/, this.direction)
+    .replace(/\{speed\}/, this.speed ? '@' + this.speed + 'cps' : '')
+    .replace(/\{damage\}/, this.damage ? '!' : '')
 }

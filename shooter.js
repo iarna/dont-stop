@@ -6,10 +6,11 @@ var inherits = require('util').inherits
 var mixin = require('mixin')
 
 function Shooter (opt) {
+  if (!opt) opt = {}
   if (!opt.health) opt.health = 1
   Moveable.call(this, opt)
   Healthy.call(this, opt)
-  this.shotStyle = {}
+  this.shotStyle = opt.shotStyle
 }
 inherits(Shooter, Moveable)
 mixin(Shooter, Healthy)
@@ -24,17 +25,9 @@ Shooter.prototype.collidesWith = function (obj) {
 }
 
 Shooter.prototype.shoot = function () {
-  if (this.direction === 'right' && this.x === this.playField.maxX) return
+  if (this.direction === 'right' && this.controller.isOOBX(this.x+1)) return
   if (this.direction === 'left' && this.x === 0) return
-  if (this.direction === 'down' && this.y === this.playField.maxY) return
+  if (this.direction === 'down' && this.controller.isOOBY(this.y+1)) return
   if (this.direction === 'up' && this.y === 0) return
-  var icons = {
-    left: '⇦',
-    up: '⇑',
-    right: '⇨',
-    down: '⇓'
-  }
-  var shot = this.universe.newShot(icons, this)
-  shot.render.style = this.shotStyle
-  shot.setXY(shot.x, shot.y) // count as movement to destroy things in next square
+  this.controller.newShot(this).setStyle(this.shotStyle)
 }

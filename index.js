@@ -1,52 +1,29 @@
 #!/usr/bin/env node
 'use strict'
-var blessed = require('blessed')
-var Universe = require('./universe.js')
+var Control = require('./control.js')
 var onExit = require('signal-exit')
 var MersenneTwister = require('mersenne-twister');
 var fps = 60
 
+
 var seed = process.argv[2]
-var screen = initialize(blessed.screen({
-  smartCSR: true,
-  useBCE: false,
-  fullUnicode: true,
-  forceUnicode: true
-}))
-
-var status = blessed.text({
-  top: screen.rows - 1,
-  left: screen.cols - 43,
-  width: 40,
-  content: ''
+var control = new Control(fps, seed)
+initialize()
+control.status(function () {
+  return ' Health: ' + player.health + ' Level: ' + currentLevel
 })
-screen.append(status)
 
-var universe = new Universe(screen, seed)
 var acting = false
 var actionQueue = []
-var player = universe.newPlayer('🐙', 0, 0, 15)
+var player = control.newPlayer('🐙', 0, 0, 15)
 player.once('destroy', destroyPlayer)
 var currentLevel
-screen.render()
-
-setInterval(refresh, Math.floor(1000 / fps))
-function refresh () {
-  var now = Date.now()
-  for (var ii = 0; ii < universe.movingObjects.length; ++ii) {
-    if (universe.movingObjects[ii].destroyed) continue
-    universe.movingObjects[ii].move(now)
-  }
-  if (!universe.refresh) return
-  universe.refresh = false
-  status.content = ' Health: ' + player.health + ' Level: ' + currentLevel
-  screen.render()
-  universe.validate()
-}
+var ouches = 0
 
 startGame()
 
 function startGame() {
+  control.start()
   var level = 0
   runNextLevel()
   function runNextLevel () {
@@ -56,55 +33,60 @@ function startGame() {
 
 function runLevel (level, next) {
   currentLevel = level
+  ouches = (Math.pow(2, level + 2) / (level + 2)) ^ 0
 
-  universe.ouches = Math.floor(Math.pow(2, level + 2) / (level + 2))
-  var maxX = (universe.playField.maxX / 2)^0
-  for (var ii = 0; ii < universe.ouches; ++ii) {
+  for (var ii = 0; ii < ouches; ++ii) {
     do {
-      var xx = Math.floor(universe.rng.random() * (maxX + 1))
-      var yy = Math.floor(universe.rng.random() * (universe.playField.maxY + 1))
-    } while (universe.locations[xx][yy])
-    var ouch = universe.newOuch('🌟', xx, yy)
+      var xx = control.random(control.universe.width)
+      var yy = control.random(control.universe.height)
+    } while (control.objectsAt(xx, yy).length)
+    var ouch = control.newOuch('🌟', xx, yy)
     ouch.once('destroy', destroyOuch(ouch, player, allDone))
   }
   function allDone () {
     player.point('none')
     actionQueue = []
     player.removeListener('moved', nextAction)
-    universe.destroy(function (obj) { return obj !== player })
+    control.forAllObjects(function (obj) {
+      if (obj === player) return
+      // we're destroying the universe so we don't want to trigger
+      // per object destroy events. This'll only really matter if
+      // we animate shot or adversary destruction.
+      obj.removeAllListeners('destroy')
+      control.remove(obj)
+    })
     next()
   }
 }
 
 onExit(function () {
-  universe.warnings.forEach(function (w) { return console.log.apply(console, w) })
+  control.warnings.forEach(function (w) { return console.log.apply(console, w) })
 })
 
 function destroyPlayer () {
-  screen.destroy()
+  control.destroy()
   console.log('GAME OVER')
   console.log('Congratulations! You made it to level', currentLevel)
   process.exit(0)
 }
 
-var animateBooms = 0
+var booms = 0
 function destroyOuch (ouch, player, allDone) {
-  var top = ouch.render.top
-  var left = ouch.render.left
   var xx = ouch.x
   var yy = ouch.y
+  var top = control.display.translateY(yy)
+  var left = control.display.translateX(xx)
   return function () {
-    --universe.ouches
+    --ouches
     ++booms
     animateBoom(left, top, function () {
-      if (--booms && universe.ouches < 1) return
-      if (universe.ouches < 1) return allDone()
+      if (--booms && ouches < 1) return
+      if (ouches < 1) return allDone()
       // one out of ten times, destroying an ouch will
       // replace it with an aversary
-      if (Math.floor(universe.rng.random()*10) === 0) {
-        var adversary = universe.newAdversary('🌪', xx, yy, 11)
+      if (control.random(10) === 0) {
+        var adversary = control.newAdversary('🌪', xx, yy, 11, player)
         adversary.point('up')
-        adversary.setPlayer(player)
         adversary.on('destroy', function () {
           player.takeHealing(3)
         })
@@ -113,27 +95,27 @@ function destroyOuch (ouch, player, allDone) {
   }
 }
 
-function initialize (screen) {
-  screen.title = "DON'T STOP"
-  screen.key('C-c', function () {
-    screen.destroy()
+function initialize () {
+  control.display.screen.title = "DON'T STOP"
+  control.display.screen.key('C-c', function () {
+    control.destroy()
 //    console.log(universe.movingObjects)
     process.exit(0)
   })
-  screen.key('left', left)
-  screen.key('a', left) // wasd
-  screen.key('h', left) // vi
-  screen.key('right', right)
-  screen.key('d', right) // wasd
-  screen.key('l', right) // vi
-  screen.key('up', up)
-  screen.key('w', up) // wasd
-  screen.key('k', up) // vi
-  screen.key('down', down)
-  screen.key('s', down) // wasd
-  screen.key('x', down) // waxd
-  screen.key('j', down) // vi
-  screen.key('space', shoot)
+  control.display.screen.key('left', left)
+  control.display.screen.key('a', left) // wasd
+  control.display.screen.key('h', left) // vi
+  control.display.screen.key('right', right)
+  control.display.screen.key('d', right) // wasd
+  control.display.screen.key('l', right) // vi
+  control.display.screen.key('up', up)
+  control.display.screen.key('w', up) // wasd
+  control.display.screen.key('k', up) // vi
+  control.display.screen.key('down', down)
+  control.display.screen.key('s', down) // wasd
+  control.display.screen.key('x', down) // waxd
+  control.display.screen.key('j', down) // vi
+  control.display.screen.key('space', shoot)
 
   function move (dir) {
     action([player, player.point, dir])
@@ -142,7 +124,6 @@ function initialize (screen) {
   function shoot () {
     action([player, player.shoot])
   }
-
 
   function left () {
     move('left')
@@ -159,17 +140,6 @@ function initialize (screen) {
   function down () {
     move('down')
   }
-
-
-  var box = blessed.box({
-    top: 0,
-    left: 0,
-    width: screen.cols - 1,
-    height: '100%',
-    border: {type: 'line'}
-  })
-  screen.append(box)
-  return screen
 }
 
 function action (todo) {
@@ -192,6 +162,7 @@ function nextAction () {
   runAction(actionQueue.shift())
 }
 
+var blessed = require('blessed')
 function animateBoom (xx, yy, done) {
   var boom = blessed.box({
     left: xx,
@@ -246,5 +217,5 @@ function animateBoom (xx, yy, done) {
     assignArray(boom, script.shift())
   }, 150)
 
-  screen.insertAfter(boom, status)
+  control.display.screen.insertAfter(boom, control.display.status)
 }
