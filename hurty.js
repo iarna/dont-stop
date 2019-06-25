@@ -6,4 +6,3 @@ function Hurty (opt) {
   this.damage = opt.damage || 1
 }
 Hurty.prototype = {}
-

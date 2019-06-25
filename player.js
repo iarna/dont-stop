@@ -9,9 +9,11 @@ function Player (opt) {
   if (!opt) opt = {}
   if (!opt.health) opt.health = 10
   if (!opt.damage) opt.damage = 1
-  if (!opt.shotStyle) opt.shotStyle = {
-    fg: '#ffffff',
-    bold: true
+  if (!opt.shotStyle) {
+   opt.shotStyle = {
+      fg: '#ffffff',
+      bold: true
+    }
   }
   Shooter.call(this, opt)
   Hurty.call(this, opt)

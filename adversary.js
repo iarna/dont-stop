@@ -9,8 +9,10 @@ function Adversary (opt) {
   if (!opt) opt = {}
   if (!opt.health) opt.health = 3
   if (!opt.damage) opt.damage = 1
-  if (!opt.shotStyle) opt.shotStyle = {
-    fg: '#55ffff'
+  if (!opt.shotStyle) {
+   opt.shotStyle = {
+      fg: '#55ffff'
+    }
   }
   if (!opt.icon) opt.icon = '🐵'
   Shooter.call(this, opt)
@@ -167,7 +169,7 @@ Adversary.prototype._dodge = function () {
       futureY += yMove
       atSlot = self.controller.objectsAt(futureX, futureY)
     }
-    if (atSlot.length) {
+    if (atSlot.length > 0) {
 //      self.controller.warn('avoid!', movement, self.direction, atSlot)
       self.dodge.last = now
       self.spin()

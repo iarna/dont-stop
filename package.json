@@ -19,7 +19,7 @@
     "signal-exit": "^3.0.1"
   },
   "devDependencies": {
-    "standard": "^8.3.0"
+    "@iarna/standard": "^2.0.2"
   },
   "repository": {
     "type": "git",

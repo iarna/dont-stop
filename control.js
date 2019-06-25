@@ -106,7 +106,6 @@ Control.prototype.isOOBX = function (xx) {
 Control.prototype._refresh = function () {
   var self = this
   return function refresh () {
-    var now = Date.now()
     self.universe.moveObjects(Date.now())
     if (!self.needsRefresh) return
     self.needsRefresh = false

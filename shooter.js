@@ -25,9 +25,9 @@ Shooter.prototype.collidesWith = function (obj) {
 }
 
 Shooter.prototype.shoot = function () {
-  if (this.direction === 'right' && this.controller.isOOBX(this.x+1)) return
+  if (this.direction === 'right' && this.controller.isOOBX(this.x + 1)) return
   if (this.direction === 'left' && this.x === 0) return
-  if (this.direction === 'down' && this.controller.isOOBY(this.y+1)) return
+  if (this.direction === 'down' && this.controller.isOOBY(this.y + 1)) return
   if (this.direction === 'up' && this.y === 0) return
   this.controller.newShot(this).setStyle(this.shotStyle)
 }

@@ -1,7 +1,6 @@
 'use strict'
 module.exports = Entity
 
-var blessed = require('blessed')
 var EventEmitter = require('events').EventEmitter
 var inherits = require('util').inherits
 
@@ -44,5 +43,5 @@ Entity.prototype.inspect = function () {
     .replace(/\{alive\}/, this.destroyed ? '-' : '#')
     .replace(/\{id\}/, this.id)
     .replace(/\{class\}/, this['__' + 'proto' + '__'].constructor.name)
-    .replace('\{icon\}', this.icon)
+    .replace(/\{icon\}/, this.icon)
 }

@@ -30,14 +30,13 @@ function Display (control) {
   screen.append(status)
   this.status = status
 
-
   this.playScreen = {
     top: 1,
     left: 1,
     bottom: screen.rows - 2,
-    right: screen.cols - 3,
+    right: screen.cols - 3
   }
-  this.playScreen.width = this.playScreen.right - this.playScreen.left,
+  this.playScreen.width = this.playScreen.right - this.playScreen.left
   this.playScreen.height = this.playScreen.bottom - this.playScreen.top
   this.objects = {}
 }
@@ -78,7 +77,7 @@ Display.prototype.updatePosition = function (obj) {
   var dobj = this.objects[obj.id]
   if (!dobj) return
   dobj.left = xx
-  dobj.top  = yy
+  dobj.top = yy
 }
 
 Display.prototype.isOOBX = function (xx) {
