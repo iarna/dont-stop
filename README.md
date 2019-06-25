@@ -14,15 +14,7 @@ See how far you can make it!
 It's very much a WIP.
 
 ```console
-$ npm install -g iarna/dont-stop
-$ dont-stop
-```
-Or
-```console
-$ git clone https://github.com/iarna/dont-stop
-$ cd dont-stop
-$ npm install
-$ npm start
+$ npx @iarna/dont-stop
 ```
 
 ## Controls
